@@ -9,8 +9,16 @@ app.use(express.static("public"));
 
 /* HTMLページ取得 */
 app.get("/page", async (req, res) => {
-  const url = req.query.url;
+  let url = req.query.url;
   if (!url) return res.status(400).json({ error: "URL required" });
+
+  // URLかどうかを簡易判定
+  const isUrl = /^https?:\/\//i.test(url);
+  if (!isUrl) {
+    // URLでなければGoogle検索に変換
+    const query = encodeURIComponent(url);
+    url = `https://www.google.com/search?q=${query}`;
+  }
 
   try {
     const r = await fetch(url, {
