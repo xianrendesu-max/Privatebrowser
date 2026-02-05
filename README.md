@@ -8,4 +8,4 @@
 
 1. このプロジェクトをクローン:
 ```bash
-git clone https://github.com/yourname/secret-project.git
+git clone https://github.com//secret-project.git
