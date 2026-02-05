@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <title>about:bank</title>
+
 <link rel="stylesheet" href="/loading.css">
+
 <style>
 :root{
   --bg:#f1f3f4;
@@ -13,7 +15,9 @@
   --text:#202124;
   --blue:#1a73e8;
 }
+
 *{ box-sizing:border-box; }
+
 body{
   margin:0;
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
@@ -29,6 +33,7 @@ body{
   padding:6px 6px 0;
   background:#dee1e6;
 }
+
 .tab{
   display:flex;
   align-items:center;
@@ -42,16 +47,20 @@ body{
   user-select:none;
   transition:background .15s;
 }
+
 .tab:hover{ background:#e2e4e7; }
+
 .tab.active{
   background:var(--tab-active);
   box-shadow:0 -1px 0 #fff;
 }
+
 .tab .close{
   font-size:14px;
   opacity:.6;
 }
 .tab .close:hover{ opacity:1; }
+
 #newTab{
   margin-left:4px;
   width:28px;
@@ -73,10 +82,12 @@ body{
   background:#ffffff;
   border-bottom:1px solid var(--border);
 }
+
 #lock{
   font-size:14px;
   padding:6px;
 }
+
 #address{
   flex:1;
   padding:10px 14px;
@@ -91,6 +102,7 @@ body{
   border-color:var(--blue);
   box-shadow:0 0 0 1px var(--blue);
 }
+
 #go{
   border:none;
   background:transparent;
@@ -124,6 +136,7 @@ iframe.active{ display:block; }
 }
 </style>
 </head>
+
 <body>
 
 <div id="loadingBar"></div>
@@ -135,7 +148,7 @@ iframe.active{ display:block; }
 
 <!-- アドレスバー -->
 <div id="toolbar">
-  <div id="lock">home</div>
+  <div id="lock">🏠</div>
   <input id="address" placeholder="検索またはURLを入力">
   <button id="go" onclick="go()">↵</button>
 </div>
@@ -145,99 +158,88 @@ iframe.active{ display:block; }
 
 <script>
 let tabs={}, active=null, id=0;
-const loadingBar = document.getElementById("loadingBar");
-const newTabBtn = document.getElementById("newTab");
 
 /* ===== ローディング ===== */
 function startLoading(){
-  loadingBar.style.width = "15%";
-  setTimeout(() => loadingBar.style.width = "70%", 200);
+  const b=loadingBar;
+  b.style.width="15%";
+  setTimeout(()=>b.style.width="70%",200);
 }
 function endLoading(){
-  loadingBar.style.width = "100%";
-  setTimeout(() => loadingBar.style.width = "0%", 300);
+  const b=loadingBar;
+  b.style.width="100%";
+  setTimeout(()=>b.style.width="0%",300);
 }
 
 /* ===== タブ ===== */
 function newTab(){
-  const tid = id++;
-  tabs[tid] = {};
+  const tid=id++;
+  tabs[tid]={};
 
-  const tab = document.createElement("div");
-  tab.className = "tab";
-  tab.innerHTML = `<span>Home</span><span class="close">×</span>`;
-  tab.onclick = () => activate(tid);
-  tab.querySelector(".close").onclick = e => {
+  const tab=document.createElement("div");
+  tab.className="tab";
+  tab.innerHTML=`<span>Home</span><span class="close">×</span>`;
+  tab.onclick=()=>activate(tid);
+  tab.querySelector(".close").onclick=e=>{
     e.stopPropagation();
     closeTab(tid);
   };
 
-  const iframe = document.createElement("iframe");
-  iframe.src = "/home.html";
+  tabs[tid].tab=tab;
+  tabs[tid].iframe=document.createElement("iframe");
+  tabs[tid].iframe.src="/home.html";
 
-  tabs[tid].tab = tab;
-  tabs[tid].iframe = iframe;
-
-  document.getElementById("tabs").insertBefore(tab, newTabBtn);
-  document.getElementById("frames").appendChild(iframe);
+  document.getElementById("tabs").insertBefore(tab,newTabBtn);
+  document.getElementById("frames").appendChild(tabs[tid].iframe);
 
   activate(tid);
 }
 
 function closeTab(tid){
-  if(Object.keys(tabs).length === 1) return;
+  if(Object.keys(tabs).length===1) return;
   tabs[tid].tab.remove();
   tabs[tid].iframe.remove();
   delete tabs[tid];
 }
 
 function activate(tid){
-  active = tid;
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.querySelectorAll("iframe").forEach(f => f.classList.remove("active"));
+  active=tid;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.querySelectorAll("iframe").forEach(f=>f.classList.remove("active"));
   tabs[tid].tab.classList.add("active");
   tabs[tid].iframe.classList.add("active");
-  document.getElementById("lock").textContent = "home";
+  lock.textContent="🏠";
 }
 
 /* ===== ナビゲーション ===== */
-function normalize(value){
-  if(value.startsWith("http")) return value;
-  if(value.includes(".") && !value.includes(" "))
-    return "https://"+value;
-  return "https://www.google.com/search?q="+encodeURIComponent(value);
+function normalize(v){
+  if(v.startsWith("http")) return v;
+  if(v.includes(".")&&!v.includes(" "))
+    return "https://"+v;
+  return "https://www.google.com/search?q="+encodeURIComponent(v);
 }
 
 async function go(value){
-  const input = value || document.getElementById("address").value;
-  const url = normalize(input);
-
+  const input=value||address.value;
+  const url=normalize(input);
   startLoading();
-
-  // iframe に Puppeteer 取得ページを表示
-  tabs[active].iframe.src = "/page?url=" + encodeURIComponent(url);
-
-  try{
-    tabs[active].tab.firstChild.textContent = new URL(url).hostname;
-  } catch(e) {
-    tabs[active].tab.firstChild.textContent = "Search";
-  }
-
-  document.getElementById("lock").textContent = url.startsWith("https://") ? "🔒" : "⚠️";
-
+  const r=await fetch("/page?url="+encodeURIComponent(url));
+  const d=await r.json();
+  tabs[active].iframe.srcdoc=d.html;
+  tabs[active].tab.firstChild.textContent=new URL(url).hostname;
+  lock.textContent=d.secure?"🔒":"⚠️";
   endLoading();
 }
 
-/* ===== イベント ===== */
-document.getElementById("address").addEventListener("keydown", e => {
-  if(e.key === "Enter") go();
+address.addEventListener("keydown",e=>{
+  if(e.key==="Enter") go();
 });
 
-window.addEventListener("message", e => {
-  if(e.data.type === "navigate") go(e.data.value);
+window.addEventListener("message",e=>{
+  if(e.data.type==="navigate") go(e.data.value);
 });
 
-/* ===== 初期タブ ===== */
+const newTabBtn=document.getElementById("newTab");
 newTab();
 </script>
 
