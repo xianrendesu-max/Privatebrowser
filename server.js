@@ -15,17 +15,17 @@ app.get("/page", async (req, res) => {
   // URLかどうかを簡易判定
   const isUrl = /^https?:\/\//i.test(url);
   if (!isUrl) {
-    // URLでなければGoogle検索に変換
+    // URLでなければBing検索に変換
     const query = encodeURIComponent(url);
-    url = `https://www.google.com/search?q=${query}`;
+    url = `https://www.bing.com/search?q=${query}`;
   }
 
   try {
-    const r = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
+    const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
     const html = await r.text();
-    const rewritten = rewriteHtml(html, url);
+
+    // 元HTMLを可能な限り壊さず返す
+    const rewritten = rewriteHtml ? rewriteHtml(html, url) : html;
 
     res.json({
       url,
