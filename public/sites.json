@@ -1,0 +1,6 @@
+[
+  { "name": "Google", "url": "https://www.google.com" },
+  { "name": "Wikipedia", "url": "https://ja.wikipedia.org" },
+  { "name": "GitHub", "url": "https://github.com" },
+  { "name": "MDN", "url": "https://developer.mozilla.org" }
+]
